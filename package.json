@@ -1,0 +1,14 @@
+{
+    "type": "module",
+    "scripts": {
+        "init": "npm i",
+        "dev": "node dev/dev",
+        "serve": "firebase emulators:start",
+        "deploy": "firebase deploy"
+    },
+    "private": true,
+    "devDependencies": {
+        "fs": "^0.0.1-security",
+        "typescript": "^5.7.2"
+    }
+}
