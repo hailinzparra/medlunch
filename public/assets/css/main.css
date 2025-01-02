@@ -1,4 +1,3 @@
-* {
-    font-family: "Geologica", serif;
-    font-optical-sizing: auto;
+:root {
+    --bs-body-font-family: "Geologica", sans-serif;
 }
