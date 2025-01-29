@@ -27,8 +27,8 @@ body {
     transform: translate(-50%, -50%);
 
     width: 100vw;
-    height: 100vh;
-    max-width: 80vh;
+    height: 100dvh;
+    max-width: 80dvh;
 }
 
 .main-container {
@@ -70,13 +70,13 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 1vh;
+    gap: 1dvh;
 
     width: max-content;
-    max-width: calc(100% - 2vh);
+    max-width: calc(100% - 2dvh);
 
-    padding: 1.5vh !important;
-    border-radius: 0.5vh;
+    padding: 1.5dvh !important;
+    border-radius: 0.5dvh;
 
     position: absolute;
     top: 50%;
@@ -91,18 +91,18 @@ body {
 }
 
 .login-button > span {
-    font-size: 3.5vh;
+    font-size: 3.5dvh;
 }
 
 .login-button > .text {
-    font-size: 3vh;
+    font-size: 3dvh;
     font-weight: bold;
 }
 
 .top-bar {
     display: flex;
     background-color: #ddd;
-    padding: 0.5vh !important;
+    padding: 0.5dvh !important;
 }
 
 .view-all-button {
@@ -112,15 +112,15 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5vh;
+    gap: 0.5dvh;
 
     width: max-content;
-    max-width: calc(100% - 2vh);
+    max-width: calc(100% - 2dvh);
 
-    padding: 0.5vh !important;
+    padding: 0.5dvh !important;
     border: 1px solid var(--bs-success-border-subtle);
-    border-radius: 0.5vh;
-    box-shadow: 0 0 0.5vh var(--bs-success-border-subtle);
+    border-radius: 0.5dvh;
+    box-shadow: 0 0 0.5dvh var(--bs-success-border-subtle);
 
     text-align: center;
 }
@@ -130,10 +130,10 @@ body {
 }
 
 .view-all-button > span {
-    font-size: 1.5vh;
+    font-size: 1.5dvh;
 }
 
 .view-all-button > .text {
-    font-size: 1.5vh;
+    font-size: 1.5dvh;
     font-weight: bold;
 }

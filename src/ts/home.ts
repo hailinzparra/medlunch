@@ -16,7 +16,7 @@
             classes: ['col-12', 'col-sm-6', 'col-md-4', 'mb-3'],
             children: [
                 dom.c('div', {
-                    classes: ['card', 'h-100'],
+                    classes: ['card', 'h-100', 'start-animation-rise'],
                     children: [
                         dom.c('div', {
                             classes: ['card-body'],
@@ -55,5 +55,5 @@
     add_item('EKG Sim', 'ekg-sim', 'Interactive EKG learning. Visualize a standard 12-lead EKG report and learn to identify normal and abnormal patterns.', BadgeText.EDUCATIONAL)
     // add_item('Examine, Interpret, Excel!', 'eie', 'Handle patient cases as you journey through the medical field.', BadgeText.EDUCATIONAL)
     // add_item('Happy Capy', 'happy-capy', 'Solve puzzles, manage your haven, and create a loving habitat for capybaras.', BadgeText.CASUAL)
-    add_item('Marble Shoot', 'marble-shoot', 'Turn-based marble battles. Knock out rivals and claim victory!', BadgeText.CASUAL)
+    // add_item('Marble Rivals', 'marble-rivals', 'Turn-based marble battles. Knock out rivals and claim victory!', BadgeText.CASUAL)
 })()

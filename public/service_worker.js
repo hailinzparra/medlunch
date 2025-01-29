@@ -1,4 +1,4 @@
-const current_cache_name = 'medlunch-v0.1'
+const current_cache_name = 'medlunch-v0.10'
 
 self.addEventListener('install', ev => {
     ev.waitUntil(
