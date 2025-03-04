@@ -1,4 +1,4 @@
-const current_cache_name = 'medlunch-v0.10'
+const current_cache_name = 'medlunch-v0.17'
 
 self.addEventListener('install', ev => {
     ev.waitUntil(
@@ -6,7 +6,6 @@ self.addEventListener('install', ev => {
             cache.addAll([
                 '/',
                 '/index.html',
-                '/ekg-sim/index.html',
             ])
         })
     )

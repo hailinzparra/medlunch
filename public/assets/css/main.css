@@ -6,6 +6,10 @@
     animation: 500ms ease animation-rise;
 }
 
+.start-animation-fade {
+    animation: 500ms ease animation-fade;
+}
+
 @keyframes animation-rise {
     0% {
         opacity: 0;
@@ -14,5 +18,14 @@
     100% {
         opacity: 1;
         transform: none;
+    }
+}
+
+@keyframes animation-fade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
     }
 }

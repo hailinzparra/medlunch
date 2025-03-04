@@ -40,7 +40,7 @@ interface Core {
     events: CoreEvents
     math: CoreMath
     common: CoreCommon
-    domu: CoreDOM
+    domc: CoreDOM
     stage: CoreStage
     input: CoreInput
     time: CoreTime
@@ -51,19 +51,19 @@ interface Core {
     debug: CoreDebug
     runner: CoreRunner
     loader: CoreLoader
-    init(canvas_parent: Element): Promise<void>
+    init(canvas_parent: Element, wait_time?: number): Promise<void>
     start(starting_scene: CoreScene): void
 }
 
 declare const core: Core
 
-core.init = async (canvas_parent) => {
+core.init = async (canvas_parent, wait_time = 0) => {
     canvas_parent.appendChild(core.stage.canvas)
     return new Promise((resolve) => {
         setTimeout(() => {
             core.stage.resize_event()
             resolve()
-        }, 500)
+        }, wait_time)
     })
 }
 
@@ -357,9 +357,9 @@ interface CoreDOM {
 }
 
 /**
- * DOM Utils, short domu because dom already taken.
+ * DOM Utils, short domc because dom already taken.
  */
-core.domu = {
+core.domc = {
     q(s: string) {
         return document.querySelector(s)
     },
@@ -404,6 +404,12 @@ interface CoreStage {
     resize_event(): void
 }
 
+interface CoreStageEventMap {
+    'core_stage_before_resize': {}
+}
+
+interface CoreEventsMap extends CoreStageEventMap { }
+
 let G_BASE_CANVAS_HEIGHT = 1080 // set this in base globals
 core.stage = {
     canvas: document.createElement('canvas'), // dummy canvas
@@ -414,7 +420,8 @@ core.stage = {
         this.canvas.getContext('2d')!.clearRect(0, 0, this.size.x, this.size.y)
     },
     resize_event() {
-        this.canvas_bounding_client_rect = core.stage.canvas.getBoundingClientRect()
+        core.events.trigger('core_stage_before_resize', {})
+        this.canvas_bounding_client_rect = this.canvas.getBoundingClientRect()
         this.canvas_scale = G_BASE_CANVAS_HEIGHT / this.canvas_bounding_client_rect.height
         this.canvas.width = this.canvas_bounding_client_rect.width * this.canvas_scale
         this.canvas.height = this.canvas_bounding_client_rect.height * this.canvas_scale
@@ -996,6 +1003,7 @@ core.scene = {
 //#endregion
 
 //#region Obj
+// todo: add interface so object names can extend from it
 interface CoreObjectManager {
     _ID: number
     names: string[]
@@ -1332,6 +1340,7 @@ interface CoreDebug {
     debug_index: number
     odd(): boolean
     draw_fps(x: number, y: number): void
+    draw_text(x: number, y: number, t: string): void
 }
 
 core.debug = {
@@ -1340,8 +1349,9 @@ core.debug = {
         return this.debug_index % 2 !== 0
     },
     draw_fps(x, y) {
-        const t = `${Math.round(core.time.fps)}`
-
+        this.draw_text(x, y, `${Math.round(core.time.fps)}`)
+    },
+    draw_text(x, y, t) {
         core.draw.set_font(core.font.s)
         const tw = core.draw.get_text_width(t)
         const th = core.draw.get_text_height(t)
@@ -1349,7 +1359,7 @@ core.debug = {
         core.draw.set_alpha(0.5)
 
         core.draw.set_color('#000')
-        core.draw.rect(0, 0, tw, th)
+        core.draw.rect(x, y, tw, th)
 
         core.draw.set_hvalign('left', 'top')
         core.draw.set_color('#fff')
