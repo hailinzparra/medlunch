@@ -18,6 +18,7 @@ type CoreDrawImageType = typeof CORE_DRAW_IMAGE_TYPE_IMAGE | typeof CORE_DRAW_IM
 
 //#region Globals
 const G_CORE_MATH_TWO_PI = 2 * Math.PI
+const G_CORE_MATH_HALF_PI = 0.5 * Math.PI
 const G_CORE_MATH_DEG_TO_RAD = Math.PI / 180
 const G_CORE_MATH_RAD_TO_DEG = 180 / Math.PI
 
@@ -145,6 +146,9 @@ class CoreVec2 {
     clone(): CoreVec2 {
         return new CoreVec2(this.x, this.y)
     }
+    half(): CoreVec2 {
+        return new CoreVec2(this.x * 0.5, this.y * 0.5)
+    }
     set(v: CoreVec2): CoreVec2
     set(x: number, y: number): CoreVec2
     set(x: CoreVec2 | number, y?: number): CoreVec2 {
@@ -259,6 +263,16 @@ class CoreVec2 {
         v.set_angle_deg(angle_deg)
         return v
     }
+    static project(a: CoreVec2, b: CoreVec2) {
+        const h = a.get_length()
+        const b_ang = core.math.convert_angle(b.get_angle())
+        const alpha = b_ang - core.math.convert_angle(a.get_angle())
+        const adjacent = Math.cos(alpha) * h
+        return CoreVec2.polar(adjacent, b_ang + (Math.abs(alpha) > G_CORE_MATH_HALF_PI ? Math.PI * Math.sign(alpha) : 0))
+    }
+    static distance(a: CoreVec2, b: CoreVec2) {
+        return core.math.distance(a.x, a.y, b.x, b.y)
+    }
 }
 //#endregion
 
@@ -272,8 +286,8 @@ interface CoreMath {
     irange(min: number, max?: number): number
     randneg(t?: number): number
     distance(x1: number, y1: number, x2: number, y2: number): number
-    seed: number
-    seeded_random(): number
+    convert_angle(rad: number): number
+    convert_angle_deg(deg: number): number
 }
 
 core.math = {
@@ -301,11 +315,13 @@ core.math = {
     distance(x1, y1, x2, y2) {
         return Math.hypot(x2 - x1, y2 - y1)
     },
-    seed: 0,
-    seeded_random() {
-        // https://en.wikipedia.org/wiki/Linear_congruential_generator
-        this.seed = (this.seed * 9301 + 49297) % 233280
-        return this.seed / 233280
+    convert_angle(rad) {
+        rad %= G_CORE_MATH_TWO_PI
+        return rad < 0 ? rad + G_CORE_MATH_TWO_PI : rad
+    },
+    convert_angle_deg(deg) {
+        deg %= 360
+        return deg < 0 ? deg + 360 : deg
     },
 }
 //#endregion
@@ -771,6 +787,7 @@ interface CoreDraw {
     strip(name: string, image_index: number, x: number, y: number): void
     draw(is_stroke?: boolean): void
     line(x1: number, y1: number, x2: number, y2: number): void
+    line_vec(a: CoreVec2, b: CoreVec2): void
     rect(x: number, y: number, w: number, h: number, is_stroke?: boolean): void
     circle(x: number, y: number, r: number, is_stroke?: boolean): void
     on_transform(x: number, y: number, xscale: number, yscale: number, angle_deg: number, draw_fn: Function): void
@@ -887,6 +904,9 @@ core.draw = {
         this.ctx.lineTo(x2, y2)
         this.ctx.stroke()
     },
+    line_vec(a, b) {
+        this.line(a.x, a.y, b.x, b.y)
+    },
     rect(x, y, w, h, is_stroke = false) {
         this.ctx.beginPath()
         this.ctx.rect(x, y, w, h)
@@ -964,10 +984,10 @@ class CoreScene<T = {}> {
         this.name = name
         if (props) this.props = props
     }
-    start() { }
-    update() { }
-    render() { }
-    render_ui() { }
+    start(p: typeof this.props) { }
+    update(p: typeof this.props) { }
+    render(p: typeof this.props) { }
+    render_ui(p: typeof this.props) { }
 }
 
 core.scene = {
@@ -988,16 +1008,16 @@ core.scene = {
         })
     },
     restart() {
-        this.current_scene.start()
+        this.current_scene.start(this.current_scene.props)
     },
     update() {
-        this.current_scene.update()
+        this.current_scene.update(this.current_scene.props)
     },
     render() {
-        this.current_scene.render()
+        this.current_scene.render(this.current_scene.props)
     },
     render_ui() {
-        this.current_scene.render_ui()
+        this.current_scene.render_ui(this.current_scene.props)
     },
 }
 //#endregion
@@ -1006,23 +1026,23 @@ core.scene = {
 // todo: add interface so object names can extend from it
 interface CoreObjectManager {
     _ID: number
-    names: string[]
+    names: (string | number)[]
     instances: CoreObject[][]
-    add_name(name: string): number
-    get_index(name: string): number
+    add_name(name: string | number): number
+    get_index(name: string | number): number
     update_all(): void
     render_all(): void
     render_ui_all(): void
     /**
      * Push instance, give it unique id, and call `start`
      */
-    instantiate<T = CoreObject>(name: string, instance: T): T
-    take<T = CoreObject>(...names: string[]): T[]
+    instantiate<T = CoreObject>(name: string | number, instance: T): T
+    take<T = CoreObject>(...names: (string | number)[]): T[]
     get<T = CoreObject>(id: number): T | null
     remove(id: number): CoreObject | null
-    clear(name: string): void
+    clear(name: string | number): void
     clear_all(): void
-    nearest<T = CoreObject>(name: string, x: number, y: number): T | null
+    nearest<T = CoreObject>(name: string | number, x: number, y: number): T | null
 }
 
 class CoreObject {
