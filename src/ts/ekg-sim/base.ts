@@ -164,9 +164,46 @@ class Lead extends CoreGameObject {
         const pos = this.positive_electrodes[0].position
         const neg = this.negative_electrodes[0].position
 
+        const mag = pos.clone().subtract(neg)
+
         draw.set_color(this.color)
         draw.ctx.lineWidth = 5
         draw.line_vec(neg, pos)
+
+        draw.ctx.lineWidth = 2
+        draw.line_vec(CoreVec2.polar(500, mag.get_angle() - Math.PI).add(neg), CoreVec2.polar(500, mag.get_angle()).add(neg))
+
+        // draw.set_color(this.positive_electrodes[0].color)
+        // draw.line_vec(pos, CoreVec2.polar(500, mag.get_angle() - G_CORE_MATH_HALF_PI).add(pos))
+        // draw.line_vec(pos, CoreVec2.polar(500, mag.get_angle() + G_CORE_MATH_HALF_PI).add(pos))
+        // draw.set_color(this.negative_electrodes[0].color)
+        // draw.line_vec(neg, CoreVec2.polar(500, mag.get_angle() - G_CORE_MATH_HALF_PI).add(neg))
+        // draw.line_vec(neg, CoreVec2.polar(500, mag.get_angle() + G_CORE_MATH_HALF_PI).add(neg))
+
+        obj.take<Dipole>(G_BASE_OBJ.DIPOLE).map(dipole => {
+            const projected_pos: CoreVec2[] = [];
+            [dipole.position, dipole.target].map(d => {
+                const p = d.clone().subtract(neg)
+                const q = pos.clone().subtract(neg)
+                const n = CoreVec2.project(p, q).add(neg)
+                projected_pos.push(n)
+                draw.text_vec(d.clone().subtract(0, 50),
+                    math.convert_angle_deg(p.get_angle_deg()).toFixed(2) + '\n' +
+                    (math.convert_angle_deg(q.get_angle_deg()) - math.convert_angle_deg(p.get_angle_deg())).toFixed(2))
+                // draw.line_vec(d, neg)
+                draw.line_vec(d, n)
+                draw.circle_vec(n, 10)
+            })
+
+            const projected_mag = CoreVec2.subtract(projected_pos[1], projected_pos[0])
+            const b = CoreVec2.polar(projected_mag.get_length() * dipole.get_depol_progress(), projected_mag.get_angle()).add(projected_pos[0])
+            draw.set_color(G_BASE_COLOR.ELECTRIC)
+            draw.line_vec(projected_pos[0], b)
+
+            const c = CoreVec2.polar(projected_mag.get_length() * dipole.get_repol_progress(), projected_mag.get_angle()).add(projected_pos[0])
+            draw.set_color(G_BASE_COLOR.THEME)
+            draw.line_vec(projected_pos[0], c)
+        })
     }
 
     // get_centroid() {
@@ -217,14 +254,17 @@ class Dipole extends CoreGameObject {
     post_update(): void {
         if (time.t > this.end_time) {
             obj.remove(this.id)
-            obj.instantiate<Dipole>(G_BASE_OBJ.DIPOLE, new Dipole(
-                this.position,
-                this.target,
-                this.mass,
-                this.depol_duration,
-                this.repol_duration,
-                this.repol_delay,
-            ))
+
+            setTimeout(() => {
+                obj.instantiate<Dipole>(G_BASE_OBJ.DIPOLE, new Dipole(
+                    this.position,
+                    this.target,
+                    this.mass,
+                    this.depol_duration,
+                    this.repol_duration,
+                    this.repol_delay,
+                ))
+            }, math.range(200, 500));
         }
     }
 

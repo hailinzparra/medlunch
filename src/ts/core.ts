@@ -263,15 +263,29 @@ class CoreVec2 {
         v.set_angle_deg(angle_deg)
         return v
     }
-    static project(a: CoreVec2, b: CoreVec2) {
+    static project(a: CoreVec2, b: CoreVec2): CoreVec2 {
         const h = a.get_length()
-        const b_ang = core.math.convert_angle(b.get_angle())
-        const alpha = b_ang - core.math.convert_angle(a.get_angle())
-        const adjacent = Math.cos(alpha) * h
-        return CoreVec2.polar(adjacent, b_ang + (Math.abs(alpha) > G_CORE_MATH_HALF_PI ? Math.PI * Math.sign(alpha) : 0))
+        const b_angle = core.math.convert_angle(b.get_angle())
+        let theta = b_angle - core.math.convert_angle(a.get_angle())
+        if (theta > Math.PI) theta -= G_CORE_MATH_TWO_PI
+        else if (theta < -Math.PI) theta += G_CORE_MATH_TWO_PI
+        const adjacent = Math.cos(theta) * h
+        return CoreVec2.polar(adjacent, b_angle + (Math.abs(theta) > G_CORE_MATH_HALF_PI ? Math.PI * Math.sign(theta) : 0))
     }
-    static distance(a: CoreVec2, b: CoreVec2) {
+    static distance(a: CoreVec2, b: CoreVec2): number {
         return core.math.distance(a.x, a.y, b.x, b.y)
+    }
+    static add(a: CoreVec2, b: CoreVec2): CoreVec2 {
+        return a.clone().add(b)
+    }
+    static subtract(a: CoreVec2, b: CoreVec2): CoreVec2 {
+        return a.clone().subtract(b)
+    }
+    static multiply(a: CoreVec2, b: CoreVec2): CoreVec2 {
+        return a.clone().multiply(b)
+    }
+    static divide(a: CoreVec2, b: CoreVec2): CoreVec2 {
+        return a.clone().divide(b)
     }
 }
 //#endregion
@@ -770,6 +784,7 @@ interface CoreDraw {
     set_hvalign(halign: CanvasTextAlign, valign: CanvasTextBaseline): void
     split_text(text: string): string[]
     text(x: number, y: number, text: string): void
+    text_vec(v: CoreVec2, text: string): void
     get_text_width(text: string): number
     get_text_height(text: string): number
     add_image(origin: CoreVec2, name: string, image: HTMLImageElement): HTMLImageElement
@@ -790,6 +805,7 @@ interface CoreDraw {
     line_vec(a: CoreVec2, b: CoreVec2): void
     rect(x: number, y: number, w: number, h: number, is_stroke?: boolean): void
     circle(x: number, y: number, r: number, is_stroke?: boolean): void
+    circle_vec(v: CoreVec2, r: number, is_stroke?: boolean): void
     on_transform(x: number, y: number, xscale: number, yscale: number, angle_deg: number, draw_fn: Function): void
     image_transformed(name: string, x: number, y: number, xscale: number, yscale: number, angle_deg: number): void
     image_rotated(name: string, x: number, y: number, angle_deg: number): void
@@ -840,6 +856,9 @@ core.draw = {
         for (let i = t.length - 1; i >= 0; --i) {
             this.ctx.fillText(t[i], x, y + baseline + this.text_height * i)
         }
+    },
+    text_vec(v, text) {
+        this.text(v.x, v.y, text)
     },
     get_text_width(text) {
         return Math.max(...this.split_text(text).map(x => this.ctx.measureText(x).width))
@@ -916,6 +935,9 @@ core.draw = {
         this.ctx.beginPath()
         this.ctx.arc(x, y, r, 0, G_CORE_MATH_TWO_PI)
         this.draw(is_stroke)
+    },
+    circle_vec(v, r, is_stroke) {
+        this.circle(v.x, v.y, r, is_stroke)
     },
     on_transform(x, y, xscale, yscale, angle_deg, draw_fn) {
         this.ctx.save()
